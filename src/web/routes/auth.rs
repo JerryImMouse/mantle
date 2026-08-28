@@ -1,9 +1,18 @@
 use axum::{
-    Json, Router, extract::{Query, State}, http::StatusCode, middleware, response::IntoResponse, routing::{get, post}
+    Json, Router,
+    extract::{Query, State},
+    http::StatusCode,
+    middleware,
+    response::IntoResponse,
+    routing::{get, post},
 };
 use serde::{Deserialize, Serialize};
 
-use crate::{db::identities::IdentityProvider, state::AppState, web::{middleware::authenticate, routes::RouteResult}};
+use crate::{
+    db::identities::IdentityProvider,
+    state::AppState,
+    web::{middleware::authenticate, routes::RouteResult},
+};
 
 pub fn routes(state: AppState) -> Router<AppState> {
     let protected = Router::new()

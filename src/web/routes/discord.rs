@@ -1,11 +1,17 @@
 use axum::{
-    Json, Router, extract::{Path, Query, State}, middleware, response::IntoResponse, routing::get
+    Json, Router,
+    extract::{Path, Query, State},
+    middleware,
+    response::IntoResponse,
+    routing::get,
 };
 use reqwest::StatusCode;
 use serde::Deserialize;
 
 use crate::{
-    db::identities::IdentityProvider, integrations::discord::Snowflake, state::AppState,
+    db::identities::IdentityProvider,
+    integrations::discord::Snowflake,
+    state::AppState,
     web::{middleware::authenticate, routes::RouteResult},
 };
 
