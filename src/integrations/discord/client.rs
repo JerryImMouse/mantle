@@ -3,7 +3,10 @@ use serde::de::DeserializeOwned;
 
 use crate::integrations::discord::{
     error::DiscordHttpError,
-    models::{AccessTokenResponse, DiscordUserModel, ExchangeCodeRequest, PartialGuildModel, RefreshTokenRequest},
+    models::{
+        AccessTokenResponse, DiscordUserModel, ExchangeCodeRequest, PartialGuildModel,
+        RefreshTokenRequest,
+    },
 };
 
 const TOKEN_URL: &str = "https://discord.com/api/oauth2/token";
@@ -12,6 +15,12 @@ const API_URL: &str = "https://discord.com/api/v10";
 #[derive(Debug, Clone)]
 pub struct DiscordClient {
     http: reqwest::Client,
+}
+
+impl std::default::Default for DiscordClient {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl DiscordClient {
@@ -77,7 +86,7 @@ impl DiscordClient {
     }
 
     pub async fn refresh_token(
-        &self, 
+        &self,
         refresh_token: &str,
         client_id: &str,
         client_secret: &str,
@@ -85,7 +94,10 @@ impl DiscordClient {
         let response = self
             .http
             .post(TOKEN_URL)
-            .form(&RefreshTokenRequest { grant_type: "refresh_token", refresh_token, })
+            .form(&RefreshTokenRequest {
+                grant_type: "refresh_token",
+                refresh_token,
+            })
             .basic_auth(client_id, Some(client_secret))
             .send()
             .await?;
@@ -108,9 +120,7 @@ async fn try_parse_response<T: DeserializeOwned>(
                 tracing::error!(%body, "discord client request failed");
                 return Err(DiscordHttpError::Unknown(body));
             } else {
-                tracing::error!(
-                    "discord client request failed"
-                );
+                tracing::error!("discord client request failed");
                 return Err(DiscordHttpError::Unknown(String::new()));
             }
         }
@@ -123,7 +133,7 @@ async fn try_parse_response<T: DeserializeOwned>(
         Ok(data) => data,
         Err(e) => {
             tracing::error!(%status, "{e}");
-            
+
             return Err(DiscordHttpError::InvalidResponse);
         }
     };

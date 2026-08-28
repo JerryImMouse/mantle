@@ -1,7 +1,8 @@
 use axum::{
     Json, Router,
     extract::{Query, State},
-    response::IntoResponse, routing::get,
+    response::IntoResponse,
+    routing::get,
 };
 use reqwest::StatusCode;
 use serde::Deserialize;
@@ -37,9 +38,6 @@ async fn get_guilds(
     state: State<AppState>,
     req: Query<UserRequestQuery>,
 ) -> RouteResult<impl IntoResponse> {
-    let guilds = state
-        .discord
-        .get_guilds(req.provider, &req.id)
-        .await?;
+    let guilds = state.discord.get_guilds(req.provider, &req.id).await?;
     Ok((StatusCode::OK, Json(guilds)))
 }

@@ -7,11 +7,7 @@ use axum::{
 };
 use serde::{Deserialize, Serialize};
 
-use crate::{
-    db::identities::IdentityProvider,
-    state::AppState,
-    web::routes::RouteResult,
-};
+use crate::{db::identities::IdentityProvider, state::AppState, web::routes::RouteResult};
 
 pub fn routes() -> Router<AppState> {
     Router::new()

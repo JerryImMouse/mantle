@@ -17,7 +17,10 @@ pub enum WebError {
 
 impl WebError {
     pub fn user(status_code: u16, error_msg: Option<String>) -> Self {
-        Self::User(WebErrorDetails { status_code, error_msg })
+        Self::User(WebErrorDetails {
+            status_code,
+            error_msg,
+        })
     }
 }
 

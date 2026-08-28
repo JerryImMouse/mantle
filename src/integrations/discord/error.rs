@@ -1,7 +1,7 @@
 #[derive(Debug, thiserror::Error)]
 pub enum DiscordHttpError {
     #[error("reqwest error: {0}")]
-    Reqwest(#[from] reqwest::Error), 
+    Reqwest(#[from] reqwest::Error),
     #[error("rate limited")]
     RateLimited,
     #[error("invalid response")]
@@ -9,5 +9,3 @@ pub enum DiscordHttpError {
     #[error("unknown error: {0}")]
     Unknown(String),
 }
-
-

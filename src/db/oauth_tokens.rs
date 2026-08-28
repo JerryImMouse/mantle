@@ -21,7 +21,7 @@ pub async fn create(
     refresh_token: String,
     expires_at: DateTime<Utc>,
 ) -> sqlx::Result<OAuthTokens> {
-    Ok(sqlx::query_as(
+    sqlx::query_as(
         r#"
         INSERT INTO oauth_tokens (identity_id, access_token, refresh_token, expires_at)
         VALUES ($1, $2, $3, $4) RETURNING *;
@@ -32,21 +32,19 @@ pub async fn create(
     .bind(refresh_token)
     .bind(expires_at)
     .fetch_one(d)
-    .await?)
+    .await
 }
 
 pub async fn find_by_id(d: &MantleDb, identity_id: Uuid) -> sqlx::Result<Option<OAuthTokens>> {
-    Ok(
-        sqlx::query_as("SELECT * FROM oauth_tokens WHERE identity_id = $1")
-            .bind(identity_id)
-            .fetch_optional(d)
-            .await?,
-    )
+    sqlx::query_as("SELECT * FROM oauth_tokens WHERE identity_id = $1")
+        .bind(identity_id)
+        .fetch_optional(d)
+        .await
 }
 
 pub async fn update(
-    d: &MantleDb, 
-    identity_id: Uuid, 
+    d: &MantleDb,
+    identity_id: Uuid,
     access_token: &str,
     refresh_token: &str,
     expires_at: DateTime<Utc>,

@@ -46,7 +46,7 @@ impl AccountService {
                     CreateIdentityReq {
                         mantle_user_id: user.id,
                         provider,
-                        provider_user_id: provider_user_id.into(),
+                        provider_user_id,
                     },
                 )
                 .await?

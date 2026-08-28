@@ -1,6 +1,6 @@
-pub mod health;
 pub mod auth;
 pub mod discord;
+pub mod health;
 
 use axum::Router;
 

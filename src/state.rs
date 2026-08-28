@@ -19,7 +19,7 @@ impl AppStateInternal {
         discord: DiscordService,
     ) -> AppState {
         Arc::new(AppStateInternal {
-            config: config,
+            config,
             account,
             discord_oauth,
             discord,

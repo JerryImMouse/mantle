@@ -174,7 +174,7 @@ impl DiscordOAuthService {
 
         let mut url = Url::parse(DISCORD_AUTH_URL_BASE).map_err(InternalError::from)?;
         url.query_pairs_mut()
-            .append_pair("client_id", &client_id)
+            .append_pair("client_id", client_id)
             .append_pair("response_type", "code")
             .append_pair("scope", "identify guilds guilds.members.read")
             .append_pair("state", &state)

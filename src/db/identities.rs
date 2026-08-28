@@ -33,7 +33,7 @@ pub struct CreateIdentityReq<'a> {
 
 #[tracing::instrument(skip(d))]
 pub async fn create(d: &MantleDb, req: CreateIdentityReq<'_>) -> sqlx::Result<Identity> {
-    Ok(sqlx::query_as(
+    sqlx::query_as(
         r#"
 INSERT INTO identities (mantle_user_id, provider, provider_user_id)
     VALUES ($1, $2, $3) RETURNING *;
@@ -43,7 +43,7 @@ INSERT INTO identities (mantle_user_id, provider, provider_user_id)
     .bind(req.provider)
     .bind(req.provider_user_id)
     .fetch_one(d)
-    .await?)
+    .await
 }
 
 pub async fn find_by_provider_id(
@@ -51,7 +51,7 @@ pub async fn find_by_provider_id(
     provider: IdentityProvider,
     provider_user_id: &str,
 ) -> sqlx::Result<Option<Identity>> {
-    Ok(sqlx::query_as(
+    sqlx::query_as(
         r#"
             SELECT * FROM identities
                 WHERE provider = $1
@@ -61,16 +61,14 @@ pub async fn find_by_provider_id(
     .bind(provider)
     .bind(provider_user_id)
     .fetch_optional(d)
-    .await?)
+    .await
 }
 
 pub async fn all_for_user(d: &MantleDb, mantle_user_id: Uuid) -> sqlx::Result<Vec<Identity>> {
-    Ok(
-        sqlx::query_as("SELECT * FROM identities WHERE mantle_user_id = $1")
+    sqlx::query_as("SELECT * FROM identities WHERE mantle_user_id = $1")
             .bind(mantle_user_id)
             .fetch_all(d)
-            .await?,
-    )
+            .await
 }
 
 pub async fn find_linked_identity(

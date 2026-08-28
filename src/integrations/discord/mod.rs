@@ -6,4 +6,3 @@ pub use error::DiscordHttpError;
 
 mod models;
 pub use models::*;
-

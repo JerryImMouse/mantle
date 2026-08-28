@@ -70,8 +70,7 @@ impl DiscordService {
             identity.id,
             CURRENT_USER_CACHE_KEY,
         )
-        .await
-        .map_err(InternalError::from)?
+        .await?
         {
             Some(user) => user,
             None => {
@@ -119,8 +118,7 @@ impl DiscordService {
             identity.id,
             GUILDS_CACHE_KEY,
         )
-        .await
-        .map_err(InternalError::from)?
+        .await?
         {
             Some(guilds) => guilds,
             None => {

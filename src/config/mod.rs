@@ -21,7 +21,7 @@ pub struct ServerConfig {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct DatabaseConfig {
-    url: String, 
+    url: String,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -42,7 +42,7 @@ impl Config {
             .map_err(|e| ConfigError::io_error(e, path.to_path_buf()))?;
 
         let de: Config = toml::from_str(&data)?;
-        Ok(de)    
+        Ok(de)
     }
 
     #[tracing::instrument]

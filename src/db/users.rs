@@ -11,9 +11,7 @@ pub struct MantleUser {
 
 #[tracing::instrument(skip(d))]
 pub async fn create(d: &MantleDb) -> sqlx::Result<MantleUser> {
-    Ok(sqlx::query_as::<_, MantleUser>(
-        "INSERT INTO mantle_users DEFAULT VALUES RETURNING *;",
-    )
-    .fetch_one(d)
-    .await?)
+    sqlx::query_as::<_, MantleUser>("INSERT INTO mantle_users DEFAULT VALUES RETURNING *;")
+        .fetch_one(d)
+        .await
 }

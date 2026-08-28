@@ -12,7 +12,7 @@ pub enum ConfigError {
     ConfigIoError {
         io: std::io::Error,
         file: std::path::PathBuf,
-    }
+    },
 }
 
 impl ConfigError {

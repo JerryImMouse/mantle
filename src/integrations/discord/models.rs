@@ -43,7 +43,7 @@ pub struct DiscordUserModel {
     pub bot: Option<bool>,
     pub system: Option<bool>,
     pub mfa_enabled: Option<bool>,
-    pub locale: Option<String>
+    pub locale: Option<String>,
 }
 
 // https://docs.discord.com/developers/resources/user#guild-preview-object
