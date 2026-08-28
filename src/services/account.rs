@@ -142,4 +142,24 @@ impl AccountService {
             .map_err(InternalError::from)
             .map_err(AccountError::from)
     }
+
+    pub async fn metadata_delete(
+        &self,
+        provider: IdentityProvider,
+        provider_user_id: &str,
+        key: &str,
+    ) -> Result<Option<UserMetadata>> {
+        let identity = db::identities::find_by_provider_id(&self.db, provider, provider_user_id)
+            .await
+            .map_err(InternalError::from)?
+            .ok_or(AccountError::IdentityNotFound {
+                provider,
+                provider_user_id: provider_user_id.into(),
+            })?;
+
+        db::metadata::delete(&self.db, identity.mantle_user_id, key)
+            .await
+            .map_err(InternalError::from)
+            .map_err(AccountError::from)
+    }
 }

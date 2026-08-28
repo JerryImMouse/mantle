@@ -21,7 +21,10 @@ use reqwest::StatusCode;
 pub fn routes(state: AppState) -> Router<AppState> {
     Router::new()
         .route("/identities", get(get_linked_identities))
-        .route("/metadata/{key}", post(set_metadata).get(get_metadata))
+        .route(
+            "/metadata/{key}",
+            post(set_metadata).get(get_metadata).delete(delete_metadata),
+        )
         .layer(middleware::from_fn_with_state(state, authenticate))
 }
 
@@ -69,6 +72,25 @@ async fn get_metadata(
     let metadata = match state
         .account
         .metadata_get(req.provider, &req.id, &key)
+        .await?
+    {
+        Some(metadata) => UserMetadataDto::from(metadata),
+        None => return Ok(StatusCode::NOT_FOUND.into_response()),
+    };
+
+    Ok((StatusCode::OK, Json(metadata)).into_response())
+}
+
+async fn delete_metadata(
+    State(state): State<AppState>,
+    Query(req): Query<UserRequestQuery>,
+    Path(key): Path<String>,
+) -> RouteResult<Response> {
+    // had to do Response here instead of impl IntoResponse
+    // because of different return types
+    let metadata = match state
+        .account
+        .metadata_delete(req.provider, &req.id, &key)
         .await?
     {
         Some(metadata) => UserMetadataDto::from(metadata),
