@@ -6,10 +6,9 @@ use axum::{
     routing::get,
 };
 use reqwest::StatusCode;
-use serde::Deserialize;
 
+use super::models::UserRequestQuery;
 use crate::{
-    db::identities::IdentityProvider,
     integrations::discord::Snowflake,
     state::AppState,
     web::{middleware::authenticate, routes::RouteResult},
@@ -21,12 +20,6 @@ pub fn routes(state: AppState) -> Router<AppState> {
         .route("/user/guilds", get(get_guilds))
         .route("/user/guilds/{guild_id}/member", get(get_guild_member))
         .layer(middleware::from_fn_with_state(state, authenticate))
-}
-
-#[derive(Debug, Deserialize)]
-pub struct UserRequestQuery {
-    provider: IdentityProvider,
-    id: String,
 }
 
 #[tracing::instrument(skip(state))]

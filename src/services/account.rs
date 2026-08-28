@@ -2,7 +2,7 @@ use uuid::Uuid;
 
 use crate::db::identities::{CreateIdentityReq, Identity, IdentityProvider};
 use crate::db::{self, MantleDb};
-use crate::error::Result;
+use crate::error::{InternalError, Result};
 
 #[derive(Debug)]
 pub struct UserCheckResult {
@@ -59,5 +59,15 @@ impl AccountService {
             mantle_user_id: identity.mantle_user_id,
             identities,
         })
+    }
+
+    pub async fn find_linked_identities(
+        &self,
+        provider: IdentityProvider,
+        provider_user_id: &str,
+    ) -> Result<Vec<Identity>> {
+        db::identities::find_linked_identities(&self.db, provider, provider_user_id)
+            .await
+            .map_err(InternalError::from)
     }
 }

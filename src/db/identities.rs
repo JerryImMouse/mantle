@@ -64,6 +64,27 @@ pub async fn find_by_provider_id(
     .await
 }
 
+pub async fn find_linked_identities(
+    d: &MantleDb,
+    provider: IdentityProvider,
+    provider_user_id: &str,
+) -> sqlx::Result<Vec<Identity>> {
+    sqlx::query_as(
+        r#"
+        SELECT target.* 
+        FROM identities source
+            JOIN identities target
+            ON target.mantle_user_id = source.mantle_user_id
+        WHERE source.provider = $1
+            AND source.provider_user_id = $2
+        "#,
+    )
+    .bind(provider)
+    .bind(provider_user_id)
+    .fetch_all(d)
+    .await
+}
+
 pub async fn all_for_user(d: &MantleDb, mantle_user_id: Uuid) -> sqlx::Result<Vec<Identity>> {
     sqlx::query_as("SELECT * FROM identities WHERE mantle_user_id = $1")
         .bind(mantle_user_id)
