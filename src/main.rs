@@ -6,7 +6,7 @@ use crate::{
     db::MantleDb,
     error::InternalError,
     integrations::discord::DiscordClient,
-    services::{AccountService, DiscordOAuthService, DiscordService},
+    services::{AccountService, DiscordOAuthService, DiscordService, MetadataService},
     state::{AppState, AppStateInternal},
 };
 
@@ -50,7 +50,8 @@ fn build_state(config: SharedConfig, db: MantleDb) -> AppState {
         config.clone(),
         AccountService::new(db.clone()),
         DiscordOAuthService::new(db.clone(), discord_client.clone(), config.clone()),
-        DiscordService::new(db, discord_client, config),
+        DiscordService::new(db.clone(), discord_client, config),
+        MetadataService::new(db),
     )
 }
 

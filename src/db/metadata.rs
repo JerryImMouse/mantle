@@ -53,3 +53,11 @@ pub async fn get(
     .fetch_optional(d)
     .await
 }
+
+pub async fn delete_by_key(d: &MantleDb, key: &str) -> sqlx::Result<()> {
+    sqlx::query("DELETE FROM user_metadata WHERE key = $1")
+        .bind(key)
+        .execute(d)
+        .await?;
+    Ok(())
+}

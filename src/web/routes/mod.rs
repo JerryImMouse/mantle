@@ -1,7 +1,8 @@
-pub mod account;
-pub mod auth;
-pub mod discord;
-pub mod health;
+mod account;
+mod auth;
+mod discord;
+mod health;
+mod metadata;
 mod models;
 
 use axum::Router;
@@ -14,5 +15,6 @@ pub fn build_router(state: AppState) -> Router<AppState> {
         .nest("/api/health", health::routes())
         .nest("/api/auth", auth::routes(state.clone()))
         .nest("/api/discord", discord::routes(state.clone()))
-        .nest("/api/account", account::routes(state))
+        .nest("/api/account", account::routes(state.clone()))
+        .nest("/api/metadata", metadata::routes(state))
 }
