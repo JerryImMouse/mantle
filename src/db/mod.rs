@@ -2,7 +2,7 @@ use std::{path::Path};
 
 use sqlx::{Pool, Postgres, migrate::Migrator};
 
-use crate::config::runtime::RuntimeConfig;
+use crate::config::SharedConfig;
 pub type MantleDb = Pool<Postgres>;
 
 pub mod users;
@@ -11,7 +11,7 @@ pub mod identities;
 pub mod identity_cache;
 
 #[tracing::instrument(skip(c))]
-pub async fn setup(c: &RuntimeConfig) -> sqlx::Result<MantleDb> {
+pub async fn setup(c: &SharedConfig) -> sqlx::Result<MantleDb> {
     tracing::info!("setting up sqlite database");
     let pool = Pool::<Postgres>::connect(&c.database.url).await?;
 

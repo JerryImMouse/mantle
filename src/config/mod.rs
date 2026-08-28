@@ -1,9 +1,10 @@
 use serde::{Deserialize, Serialize};
 
-use crate::config::error::ConfigError;
+mod error;
+pub use error::ConfigError;
 
-pub mod error;
-pub mod runtime;
+mod runtime;
+pub use runtime::*;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Config {

@@ -1,6 +1,6 @@
 use std::net::Ipv4Addr;
 
-use crate::config::{Config, DatabaseConfig, DiscordConfig, ServerConfig, error::ConfigError};
+use crate::config::{Config, ConfigError, DatabaseConfig, DiscordConfig, ServerConfig};
 
 #[derive(Debug)]
 pub struct RuntimeConfig {
@@ -26,6 +26,12 @@ pub struct RuntimeDiscordConfig {
 #[derive(Debug)]
 pub struct RuntimeDatabaseConfig {
     pub url: String,
+}
+
+impl RuntimeConfig {
+    pub fn into_shared(self) -> SharedConfig {
+        SharedConfig::new(self)
+    }
 }
 
 impl Config {
@@ -75,3 +81,5 @@ impl ServerConfig {
         })
     }
 }
+
+pub type SharedConfig = std::sync::Arc<RuntimeConfig>;

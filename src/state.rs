@@ -1,26 +1,29 @@
 use crate::{
-    config::runtime::RuntimeConfig,
-    services::{account::AccountService, discord_oauth::DiscordOAuthService},
+    config::SharedConfig,
+    services::{AccountService, DiscordOAuthService, DiscordService},
 };
 use std::sync::Arc;
 
 pub struct AppStateInternal {
-    pub config: Arc<RuntimeConfig>,
+    pub config: SharedConfig,
     pub account: AccountService,
     pub discord_oauth: DiscordOAuthService,
+    pub discord: DiscordService,
 }
 
 impl AppStateInternal {
-    pub fn new(
-        config: Arc<RuntimeConfig>,
+    pub fn new_shared(
+        config: SharedConfig,
         account: AccountService,
         discord_oauth: DiscordOAuthService,
-    ) -> AppStateInternal {
-        AppStateInternal {
+        discord: DiscordService,
+    ) -> AppState {
+        Arc::new(AppStateInternal {
             config: config,
             account,
             discord_oauth,
-        }
+            discord,
+        })
     }
 }
 

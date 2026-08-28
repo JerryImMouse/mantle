@@ -1,3 +1,7 @@
-pub mod account;
-pub mod discord_oauth;
+mod account;
+mod discord_oauth;
+mod discord;
 
+pub use discord::*;
+pub use discord_oauth::*;
+pub use account::*;

@@ -26,7 +26,7 @@ async fn get_current_user(
     req: Query<UserRequestQuery>,
 ) -> RouteResult<impl IntoResponse> {
     let user = state
-        .discord_oauth
+        .discord
         .get_current_user(req.provider, &req.id)
         .await?;
     Ok((StatusCode::OK, Json(user)))
@@ -38,7 +38,7 @@ async fn get_guilds(
     req: Query<UserRequestQuery>,
 ) -> RouteResult<impl IntoResponse> {
     let guilds = state
-        .discord_oauth
+        .discord
         .get_guilds(req.provider, &req.id)
         .await?;
     Ok((StatusCode::OK, Json(guilds)))

@@ -1,4 +1,4 @@
-use crate::integrations::discord::error::DiscordHttpError;
+use crate::integrations::discord::DiscordHttpError;
 
 pub type Result<T> = std::result::Result<T, InternalError>;
 
@@ -7,7 +7,7 @@ pub enum InternalError {
     #[error("io error: {0}")]
     Io(#[from] std::io::Error),
     #[error("config error: {0}")]
-    Config(#[from] crate::config::error::ConfigError),
+    Config(#[from] crate::config::ConfigError),
 
     #[error("db error: {0}")]
     Db(#[from] sqlx::Error),

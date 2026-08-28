@@ -1,13 +1,12 @@
-use std::sync::Arc;
-
 use tokio::net::TcpListener;
 use tower_http::trace::TraceLayer;
 
 use crate::{
-    config::{Config, runtime::RuntimeConfig},
+    config::{Config, SharedConfig},
     db::MantleDb,
     error::InternalError,
-    services::{account::AccountService, discord_oauth::DiscordOAuthService},
+    integrations::discord::DiscordClient,
+    services::{AccountService, DiscordOAuthService, DiscordService},
     state::{AppState, AppStateInternal},
 };
 
@@ -26,7 +25,8 @@ async fn main() -> Result<(), InternalError> {
 
     let config = Config::load_from_file("config.toml")?
         .apply_env()
-        .validate()?;
+        .validate()?
+        .into_shared();
 
     let db = db::setup(&config).await?;
 
@@ -44,23 +44,21 @@ async fn main() -> Result<(), InternalError> {
     Ok(())
 }
 
-fn build_state(config: RuntimeConfig, db: MantleDb) -> AppState {
-    let config = Arc::new(config);
-    std::sync::Arc::new(AppStateInternal::new(
+fn build_state(config: SharedConfig, db: MantleDb) -> AppState {
+    let discord_client = DiscordClient::new();
+    AppStateInternal::new_shared(
         config.clone(),
         AccountService::new(db.clone()),
-        DiscordOAuthService::new(db, config),
-    ))
+        DiscordOAuthService::new(db.clone(), discord_client.clone(), config.clone()),
+        DiscordService::new(db, discord_client, config),
+    )
 }
 
 fn setup_tracing() {
     use tracing_subscriber::EnvFilter;
 
     let filter = EnvFilter::try_from_default_env()
-        .unwrap_or_else(|_| {
-            "mantle=debug,tower_http=debug,warn"
-                .into()
-        });
+        .unwrap_or_else(|_| "mantle=debug,tower_http=debug,warn".into());
 
     let sub = tracing_subscriber::fmt()
         .with_env_filter(filter)
@@ -71,6 +69,5 @@ fn setup_tracing() {
         .with_target(false)
         .finish();
 
-    tracing::subscriber::set_global_default(sub)
-        .expect("Failed to setup `tracing`");
+    tracing::subscriber::set_global_default(sub).expect("Failed to setup `tracing`");
 }
