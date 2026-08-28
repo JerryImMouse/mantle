@@ -61,3 +61,12 @@ pub async fn delete_by_key(d: &MantleDb, key: &str) -> sqlx::Result<()> {
         .await?;
     Ok(())
 }
+
+pub async fn update_by_key(d: &MantleDb, key: &str, value: &serde_json::Value) -> sqlx::Result<()> {
+    sqlx::query("UPDATE user_metadata SET value = $1 WHERE key = $2")
+        .bind(value)
+        .bind(key)
+        .execute(d)
+        .await?;
+    Ok(())
+}
