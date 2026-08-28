@@ -1,3 +1,4 @@
+use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize)]
@@ -20,6 +21,12 @@ pub struct Snowflake(String);
 impl Snowflake {
     pub fn as_str(&self) -> &str {
         &self.0
+    }
+}
+
+impl std::fmt::Display for Snowflake {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        self.0.fmt(f)
     }
 }
 
@@ -58,4 +65,19 @@ pub struct PartialGuildModel {
     pub approximate_member_count: Option<usize>,
     pub approximate_presence_count: Option<usize>,
     pub description: Option<String>,
+}
+
+// https://docs.discord.com/developers/resources/guild#guild-member-object
+#[derive(Debug, Serialize, Deserialize)]
+pub struct GuildMemberModel {
+    pub user: Option<DiscordUserModel>,
+    pub nick: Option<String>,
+    pub avatar: Option<String>,
+    pub banner: Option<String>,
+    pub roles: Vec<Snowflake>,
+    pub joined_at: Option<DateTime<Utc>>,
+    pub premium_since: Option<DateTime<Utc>>,
+    pub deaf: bool,
+    pub mute: bool,
+    pub communication_disabled_until: Option<DateTime<Utc>>,
 }

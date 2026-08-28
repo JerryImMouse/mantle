@@ -8,12 +8,15 @@ use crate::{
         identities::{Identity, IdentityProvider},
     },
     error::InternalError,
-    integrations::discord::{DiscordClient, DiscordUserModel, PartialGuildModel},
+    integrations::discord::{
+        DiscordClient, DiscordUserModel, GuildMemberModel, PartialGuildModel, Snowflake,
+    },
     web::WebError,
 };
 
 pub const CURRENT_USER_CACHE_KEY: &str = "discord.current_user";
 pub const GUILDS_CACHE_KEY: &str = "discord.guilds";
+pub const GUILD_MEMBER_CACHE_KEY: &str = "discord.guild_member";
 
 type Result<T> = std::result::Result<T, DiscordError>;
 
@@ -97,6 +100,59 @@ impl DiscordService {
         };
 
         Ok(user)
+    }
+
+    pub async fn get_guild_member(
+        &self,
+        provider: IdentityProvider,
+        provider_user_id: &str,
+        guild_id: Snowflake,
+    ) -> Result<GuildMemberModel> {
+        let cache_key = format!("{GUILD_MEMBER_CACHE_KEY}:{guild_id}");
+        let identity = db::identities::find_linked_identity(
+            &self.db,
+            provider,
+            provider_user_id,
+            IdentityProvider::Discord,
+        )
+        .await
+        .map_err(InternalError::from)?
+        .ok_or(DiscordError::DiscordIdentityNotFound)?;
+
+        let guild_member =
+            match db::identity_cache::get::<GuildMemberModel>(&self.db, identity.id, &cache_key)
+                .await?
+            {
+                Some(guild_member) => guild_member,
+                None => {
+                    tracing::debug!(
+                        mantle_user = %identity.mantle_user_id,
+                        discord_identity = %identity.id,
+                        %guild_id,
+                        "cache miss: requsting new `get_guild_member` from discord API"
+                    );
+
+                    let token = self.access_token(&identity).await?;
+                    let guild_member = self
+                        .client
+                        .get_guild_member(&token, guild_id)
+                        .await
+                        .map_err(InternalError::from)?;
+
+                    db::identity_cache::set(
+                        &self.db,
+                        identity.id,
+                        &cache_key,
+                        &guild_member,
+                        Utc::now() + Duration::hours(1),
+                    )
+                    .await?;
+
+                    guild_member
+                }
+            };
+
+        Ok(guild_member)
     }
 
     pub async fn get_guilds(

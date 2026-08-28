@@ -1,18 +1,22 @@
 use axum::{
     Json, Router,
-    extract::{Query, State},
+    extract::{Path, Query, State},
     response::IntoResponse,
     routing::get,
 };
 use reqwest::StatusCode;
 use serde::Deserialize;
 
-use crate::{db::identities::IdentityProvider, state::AppState, web::routes::RouteResult};
+use crate::{
+    db::identities::IdentityProvider, integrations::discord::Snowflake, state::AppState,
+    web::routes::RouteResult,
+};
 
 pub fn routes() -> Router<AppState> {
     Router::new()
         .route("/user", get(get_current_user))
         .route("/user/guilds", get(get_guilds))
+        .route("/user/guilds/{guild_id}/member", get(get_guild_member))
 }
 
 #[derive(Debug, Deserialize)]
@@ -40,4 +44,17 @@ async fn get_guilds(
 ) -> RouteResult<impl IntoResponse> {
     let guilds = state.discord.get_guilds(req.provider, &req.id).await?;
     Ok((StatusCode::OK, Json(guilds)))
+}
+
+async fn get_guild_member(
+    state: State<AppState>,
+    req: Query<UserRequestQuery>,
+    guild_id: Path<Snowflake>,
+) -> RouteResult<impl IntoResponse> {
+    let guild_member = state
+        .discord
+        .get_guild_member(req.provider, &req.id, guild_id.0)
+        .await?;
+
+    Ok((StatusCode::OK, Json(guild_member)))
 }

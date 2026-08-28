@@ -2,6 +2,7 @@ use reqwest::StatusCode;
 use serde::de::DeserializeOwned;
 
 use crate::integrations::discord::{
+    GuildMemberModel, Snowflake,
     error::DiscordHttpError,
     models::{
         AccessTokenResponse, DiscordUserModel, ExchangeCodeRequest, PartialGuildModel,
@@ -54,6 +55,22 @@ impl DiscordClient {
         let response = self
             .http
             .get(format!("{API_URL}/users/@me/guilds"))
+            .bearer_auth(token)
+            .send()
+            .await?;
+
+        let data = try_parse_response(response).await?;
+        Ok(data)
+    }
+
+    pub async fn get_guild_member(
+        &self,
+        token: &str,
+        guild: Snowflake,
+    ) -> Result<GuildMemberModel, DiscordHttpError> {
+        let response = self
+            .http
+            .get(format!("{API_URL}/users/@me/guilds/{guild}/member"))
             .bearer_auth(token)
             .send()
             .await?;
