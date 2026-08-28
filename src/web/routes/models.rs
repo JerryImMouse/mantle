@@ -5,12 +5,15 @@ use crate::db::{
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 
+#[cfg_attr(feature = "openapi", derive(utoipa::IntoParams))]
+#[cfg_attr(feature = "openapi", into_params(parameter_in = Query))]
 #[derive(Debug, Deserialize)]
 pub struct UserRequestQuery {
     pub provider: IdentityProvider,
     pub id: String,
 }
 
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 #[derive(Debug, Serialize, Deserialize)]
 pub struct IdentityDto {
     provider: IdentityProvider,
@@ -26,6 +29,7 @@ impl From<Identity> for IdentityDto {
     }
 }
 
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 #[derive(Debug, Serialize, Deserialize)]
 pub struct UserMetadataDto {
     value: serde_json::Value,

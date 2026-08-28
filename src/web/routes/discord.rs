@@ -22,6 +22,20 @@ pub fn routes(state: AppState) -> Router<AppState> {
         .layer(middleware::from_fn_with_state(state, authenticate))
 }
 
+#[cfg_attr(
+    feature = "openapi",
+    utoipa::path(
+        get,
+        description = "Public API wrapper for Discord API, cached under the hood",
+        path = "/api/discord/user",
+        params(UserRequestQuery),
+        tag = "discord",
+        responses(
+            (status = 200, body = openapi::DiscordUserModel),
+            (status = "default", body = openapi::ErrorResponse),
+        )
+    )
+)]
 #[tracing::instrument(skip(state))]
 async fn get_current_user(
     state: State<AppState>,
@@ -34,6 +48,20 @@ async fn get_current_user(
     Ok((StatusCode::OK, Json(user)))
 }
 
+#[cfg_attr(
+    feature = "openapi",
+    utoipa::path(
+        get,
+        description = "Public API wrapper for Discord API, cached under the hood",
+        path = "/api/discord/user/guilds",
+        params(UserRequestQuery),
+        tag = "discord",
+        responses(
+            (status = 200, body = Vec<openapi::PartialGuildModel>),
+            (status = "default", body = openapi::ErrorResponse),
+        )
+    )
+)]
 #[tracing::instrument(skip(state))]
 async fn get_guilds(
     state: State<AppState>,
@@ -43,15 +71,46 @@ async fn get_guilds(
     Ok((StatusCode::OK, Json(guilds)))
 }
 
+#[cfg_attr(
+    feature = "openapi",
+    utoipa::path(
+        get,
+        description = "Public API wrapper for Discord API, cached under the hood",
+        path = "/api/discord/user/guilds/{guild_id}/member",
+        params(
+            UserRequestQuery,
+            ("guild_id" = Snowflake, Path, description = "Guild ID to fetch member from")
+        ),
+        tag = "discord",
+        responses(
+            (status = 200, body = openapi::GuildMemberModel),
+            (status = "default", body = openapi::ErrorResponse),
+        )
+    )
+)]
 async fn get_guild_member(
     state: State<AppState>,
     req: Query<UserRequestQuery>,
-    guild_id: Path<Snowflake>,
+    Path(guild_id): Path<Snowflake>,
 ) -> RouteResult<impl IntoResponse> {
     let guild_member = state
         .discord
-        .get_guild_member(req.provider, &req.id, guild_id.0)
+        .get_guild_member(req.provider, &req.id, guild_id)
         .await?;
 
     Ok((StatusCode::OK, Json(guild_member)))
+}
+
+#[cfg(feature = "openapi")]
+pub mod openapi {
+    use super::*;
+    pub use crate::integrations::discord::{DiscordUserModel, GuildMemberModel, PartialGuildModel};
+    pub use crate::web::openapi::ErrorResponse;
+
+    #[derive(utoipa::OpenApi)]
+    #[openapi(
+        paths(get_current_user, get_guilds, get_guild_member),
+        components(schemas(DiscordUserModel, PartialGuildModel))
+    )]
+    pub struct ApiDoc;
 }

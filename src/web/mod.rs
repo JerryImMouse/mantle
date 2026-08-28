@@ -4,4 +4,7 @@ pub use error::WebError;
 mod middleware;
 
 mod routes;
-pub use routes::build_router;
+pub use routes::*;
+
+#[cfg(feature = "openapi")]
+pub mod openapi;

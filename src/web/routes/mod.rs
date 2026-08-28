@@ -1,11 +1,14 @@
-mod account;
-mod auth;
-mod discord;
-mod health;
-mod metadata;
-mod models;
+pub mod account;
+pub mod auth;
+pub mod discord;
+pub mod health;
+pub mod metadata;
+pub mod models;
 
 use axum::Router;
+
+#[cfg(feature = "openapi")]
+pub use super::openapi::SecurityAddon;
 
 use crate::{state::AppState, web::error::WebError};
 pub type RouteResult<T> = std::result::Result<T, WebError>;

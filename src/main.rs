@@ -1,22 +1,14 @@
-use tokio::net::TcpListener;
-use tower_http::trace::TraceLayer;
-
-use crate::{
+use mantle::{
     config::{Config, SharedConfig},
-    db::MantleDb,
+    db::{self, MantleDb},
     error::InternalError,
     integrations::discord::DiscordClient,
     services::{AccountService, DiscordOAuthService, DiscordService, MetadataService},
     state::{AppState, AppStateInternal},
+    web,
 };
-
-pub mod config;
-pub mod db;
-pub mod error;
-pub mod integrations;
-pub mod services;
-pub mod state;
-pub mod web;
+use tokio::net::TcpListener;
+use tower_http::trace::TraceLayer;
 
 #[tokio::main]
 #[tracing::instrument]

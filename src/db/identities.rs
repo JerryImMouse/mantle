@@ -4,6 +4,7 @@ use uuid::Uuid;
 
 use super::MantleDb;
 
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, sqlx::Type, Serialize, Deserialize)]
 #[sqlx(type_name = "identity_provider", rename_all = "lowercase")]
 #[serde(rename_all = "lowercase")]

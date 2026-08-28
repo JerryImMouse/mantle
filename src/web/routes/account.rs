@@ -28,6 +28,20 @@ pub fn routes(state: AppState) -> Router<AppState> {
         .layer(middleware::from_fn_with_state(state, authenticate))
 }
 
+#[cfg_attr(
+    feature = "openapi",
+    utoipa::path(
+        delete,
+        tag = "account",
+        description = "Returns identities linked to provided identity",
+        path = "/api/account/identities",
+        params(UserRequestQuery),
+        responses(
+            (status = 200, body = Vec<IdentityDto>),
+            (status = "default", body = openapi::ErrorResponse),
+        )
+    )
+)]
 #[tracing::instrument(skip(state))]
 async fn get_linked_identities(
     State(state): State<AppState>,
@@ -45,6 +59,27 @@ async fn get_linked_identities(
     Ok((StatusCode::OK, Json(dto)))
 }
 
+#[cfg_attr(
+    feature = "openapi",
+    utoipa::path(
+        post,
+        tags = ["account", "metadata"],
+        description = "Sets metadata linked with this mantle account",
+        path = "/api/account/metadata/{key}",
+        params(
+            UserRequestQuery,
+            ("key" = String, Path, description = "Metadata key to set")
+        ),
+        request_body(
+            content = serde_json::Value,
+            description = "Any JSON value to make metadata value",
+        ),
+        responses(
+            (status = 200, body = UserMetadataDto),
+            (status = "default", body = openapi::ErrorResponse),
+        )
+    )
+)]
 #[tracing::instrument(skip(state))]
 async fn set_metadata(
     State(state): State<AppState>,
@@ -61,6 +96,24 @@ async fn set_metadata(
     Ok((StatusCode::OK, Json(metadata)))
 }
 
+#[cfg_attr(
+    feature = "openapi",
+    utoipa::path(
+        get,
+        tags = ["account", "metadata"],
+        description = "Gets metadata linked with this mantle account",
+        path = "/api/account/metadata/{key}",
+        params(
+            UserRequestQuery,
+            ("key" = String, Path, description = "Metadata key to get")
+        ),
+        responses(
+            (status = 200, body = UserMetadataDto),
+            (status = 404, description = "Metadata with provided key is not found"),
+            (status = "default", body = openapi::ErrorResponse),
+        )
+    )
+)]
 #[tracing::instrument(skip(state))]
 async fn get_metadata(
     State(state): State<AppState>,
@@ -81,6 +134,24 @@ async fn get_metadata(
     Ok((StatusCode::OK, Json(metadata)).into_response())
 }
 
+#[cfg_attr(
+    feature = "openapi",
+    utoipa::path(
+        delete,
+        tags = ["account", "metadata"],
+        description = "Deletes metadata by key linked with this mantle account",
+        path = "/api/account/metadata/{key}",
+        params(
+            UserRequestQuery,
+            ("key" = String, Path, description = "Metadata key to delete")
+        ),
+        responses(
+            (status = 200, body = UserMetadataDto),
+            (status = 404, description = "Metadata with provided key is not found"),
+            (status = "default", body = openapi::ErrorResponse),
+        )
+    )
+)]
 async fn delete_metadata(
     State(state): State<AppState>,
     Query(req): Query<UserRequestQuery>,
@@ -98,4 +169,17 @@ async fn delete_metadata(
     };
 
     Ok((StatusCode::OK, Json(metadata)).into_response())
+}
+
+#[cfg(feature = "openapi")]
+pub mod openapi {
+    use super::*;
+    pub use crate::web::openapi::ErrorResponse;
+
+    #[derive(utoipa::OpenApi)]
+    #[openapi(
+        paths(get_linked_identities, get_metadata, delete_metadata, set_metadata,),
+        components(schemas(UserMetadataDto, IdentityDto,))
+    )]
+    pub struct ApiDoc;
 }

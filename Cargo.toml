@@ -2,6 +2,7 @@
 name = "mantle"
 version = "0.1.0"
 edition = "2024"
+description = "Discord authorization API service for SS14"
 
 [dependencies]
 tokio = { version = "1.52", features = ["rt-multi-thread", "macros"] }
@@ -21,3 +22,9 @@ chrono = { version = "0.4", features = ["serde"]}
 reqwest = { version = "0.13", features = ["json", "form"] }
 jsonwebtoken = { version = "11", features = ["aws_lc_rs"] }
 url = { version = "2.5" }
+
+utoipa = { version = "5.5", features = ["yaml", "chrono"], optional = true }
+
+[features]
+default = ["openapi"]
+openapi = ["dep:utoipa"]

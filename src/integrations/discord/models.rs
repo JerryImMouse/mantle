@@ -14,6 +14,7 @@ pub struct RefreshTokenRequest<'a> {
     pub refresh_token: &'a str,
 }
 
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(transparent)]
 pub struct Snowflake(String);
@@ -30,6 +31,7 @@ impl std::fmt::Display for Snowflake {
     }
 }
 
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 #[derive(Debug, Deserialize)]
 pub struct AccessTokenResponse {
     pub access_token: String,
@@ -40,6 +42,7 @@ pub struct AccessTokenResponse {
     pub scope: String,
 }
 
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 #[derive(Debug, Serialize, Deserialize)]
 pub struct DiscordUserModel {
     pub id: Snowflake,
@@ -54,6 +57,7 @@ pub struct DiscordUserModel {
 }
 
 // https://docs.discord.com/developers/resources/user#guild-preview-object
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 #[derive(Debug, Serialize, Deserialize)]
 pub struct PartialGuildModel {
     pub id: Snowflake,
@@ -68,6 +72,7 @@ pub struct PartialGuildModel {
 }
 
 // https://docs.discord.com/developers/resources/guild#guild-member-object
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 #[derive(Debug, Serialize, Deserialize)]
 pub struct GuildMemberModel {
     pub user: Option<DiscordUserModel>,

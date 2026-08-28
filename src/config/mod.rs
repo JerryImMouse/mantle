@@ -50,6 +50,7 @@ impl Config {
     pub fn apply_env(mut self) -> Self {
         self.server.apply_env();
         self.database.apply_env();
+        self.discord.apply_env();
         self
     }
 }
