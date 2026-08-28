@@ -7,7 +7,7 @@ api_secret = "change-me"
 url = "postgresql://postgres:root@localhost:5432/mantle_dev"
 
 [discord]
-client_id = "1542577660817965244"
-client_secret = "aXl3MdjKDli8voTY4PDMVjwPTU7fPXIP"
+client_id = "change-me"
+client_secret = "change-me"
 redirect_uri = "http://localhost:5050/api/auth/callback"
 state_secret = "change-me"
