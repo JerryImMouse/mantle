@@ -7,6 +7,7 @@ pub type MantleDb = Pool<Postgres>;
 
 pub mod identities;
 pub mod identity_cache;
+pub mod metadata;
 pub mod oauth_tokens;
 pub mod users;
 

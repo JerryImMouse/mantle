@@ -1,0 +1,55 @@
+use chrono::{DateTime, Utc};
+use uuid::Uuid;
+
+use crate::db::MantleDb;
+
+#[derive(Debug, sqlx::FromRow)]
+pub struct UserMetadata {
+    pub mantle_user_id: Uuid,
+    pub key: String,
+    pub value: serde_json::Value,
+
+    pub created_at: DateTime<Utc>,
+    pub updated_at: DateTime<Utc>,
+}
+
+pub async fn set(
+    d: &MantleDb,
+    mantle_user_id: Uuid,
+    key: &str,
+    value: &serde_json::Value,
+) -> sqlx::Result<UserMetadata> {
+    sqlx::query_as(
+        r#"
+        INSERT INTO user_metadata (mantle_user_id, key, value)
+        VALUES ($1, $2, $3) 
+        ON CONFLICT (mantle_user_id, key) DO UPDATE
+            SET value = excluded.value,
+                updated_at = NOW()
+        RETURNING *;
+        "#,
+    )
+    .bind(mantle_user_id)
+    .bind(key)
+    .bind(value)
+    .fetch_one(d)
+    .await
+}
+
+pub async fn get(
+    d: &MantleDb,
+    mantle_user_id: Uuid,
+    key: &str,
+) -> sqlx::Result<Option<UserMetadata>> {
+    sqlx::query_as(
+        r#"
+        SELECT * FROM user_metadata 
+        WHERE mantle_user_id = $1 
+            AND key = $2
+        "#,
+    )
+    .bind(mantle_user_id)
+    .bind(key)
+    .fetch_optional(d)
+    .await
+}
