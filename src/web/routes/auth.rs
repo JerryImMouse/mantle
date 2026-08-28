@@ -1,19 +1,19 @@
 use axum::{
-    Json, Router,
-    extract::{Query, State},
-    http::StatusCode,
-    response::IntoResponse,
-    routing::{get, post},
+    Json, Router, extract::{Query, State}, http::StatusCode, middleware, response::IntoResponse, routing::{get, post}
 };
 use serde::{Deserialize, Serialize};
 
-use crate::{db::identities::IdentityProvider, state::AppState, web::routes::RouteResult};
+use crate::{db::identities::IdentityProvider, state::AppState, web::{middleware::authenticate, routes::RouteResult}};
 
-pub fn routes() -> Router<AppState> {
-    Router::new()
+pub fn routes(state: AppState) -> Router<AppState> {
+    let protected = Router::new()
         .route("/check", post(check))
         .route("/link", get(generate_link))
+        .layer(middleware::from_fn_with_state(state, authenticate));
+
+    Router::new()
         .route("/callback", get(callback))
+        .merge(protected)
 }
 
 #[derive(Debug, Deserialize)]

@@ -1,6 +1,7 @@
 [server]
 host = "127.0.0.1"
 port = 5050
+api_secret = "change-me"
 
 [database]
 url = "postgresql://postgres:root@localhost:5432/mantle_dev"

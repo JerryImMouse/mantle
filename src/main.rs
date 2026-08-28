@@ -37,7 +37,7 @@ async fn main() -> Result<(), InternalError> {
 
     let state = build_state(config, db);
 
-    let router = web::build_router()
+    let router = web::build_router(state.clone())
         .layer(TraceLayer::new_for_http())
         .with_state(state);
     axum::serve(listener, router).await?;

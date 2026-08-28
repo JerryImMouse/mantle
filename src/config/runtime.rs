@@ -13,6 +13,7 @@ pub struct RuntimeConfig {
 pub struct RuntimeServerConfig {
     pub host: Ipv4Addr,
     pub port: u16,
+    pub api_secret: String,
 }
 
 #[derive(Debug)]
@@ -78,6 +79,7 @@ impl ServerConfig {
         Ok(RuntimeServerConfig {
             host: addr,
             port: self.port,
+            api_secret: self.api_secret,
         })
     }
 }

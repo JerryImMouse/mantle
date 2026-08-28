@@ -17,6 +17,7 @@ pub struct Config {
 pub struct ServerConfig {
     host: String,
     port: u16,
+    api_secret: String,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -62,6 +63,7 @@ impl DatabaseConfig {
 impl ServerConfig {
     pub fn apply_env(&mut self) {
         override_string("APP_HOST", &mut self.host);
+        override_string("APP_API_SECRET", &mut self.api_secret);
         override_parse("APP_PORT", &mut self.port);
     }
 }

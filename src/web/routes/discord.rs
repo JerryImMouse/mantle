@@ -1,22 +1,20 @@
 use axum::{
-    Json, Router,
-    extract::{Path, Query, State},
-    response::IntoResponse,
-    routing::get,
+    Json, Router, extract::{Path, Query, State}, middleware, response::IntoResponse, routing::get
 };
 use reqwest::StatusCode;
 use serde::Deserialize;
 
 use crate::{
     db::identities::IdentityProvider, integrations::discord::Snowflake, state::AppState,
-    web::routes::RouteResult,
+    web::{middleware::authenticate, routes::RouteResult},
 };
 
-pub fn routes() -> Router<AppState> {
+pub fn routes(state: AppState) -> Router<AppState> {
     Router::new()
         .route("/user", get(get_current_user))
         .route("/user/guilds", get(get_guilds))
         .route("/user/guilds/{guild_id}/member", get(get_guild_member))
+        .layer(middleware::from_fn_with_state(state, authenticate))
 }
 
 #[derive(Debug, Deserialize)]
