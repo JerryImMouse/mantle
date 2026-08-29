@@ -17,7 +17,7 @@ use thiserror::Error;
 use url::Url;
 use uuid::Uuid;
 
-const DISCORD_AUTH_URL_BASE: &str = "https://discord.com/oauth2/authorize?scope=identify+guilds+guilds.members.read&response_type=code";
+const DISCORD_AUTH_URL_BASE: &str = "https://discord.com/oauth2/authorize";
 
 #[derive(Error, Debug)]
 pub enum DiscordOAuthError {
@@ -32,8 +32,12 @@ pub enum DiscordOAuthError {
 
     #[error("identity doesn't have oauth tokens: {0}")]
     IdentityTokensNotFound(Uuid),
+
     #[error("discord identity for this user is not found")]
     DiscordIdentityNotFound,
+
+    #[error("provided state has been expired, try request a new link")]
+    ExpiredState,
 
     #[error(transparent)]
     Internal(#[from] InternalError),
@@ -43,6 +47,8 @@ impl From<DiscordOAuthError> for WebError {
     fn from(value: DiscordOAuthError) -> Self {
         match value {
             DiscordOAuthError::Internal(e) => Self::from(e),
+            DiscordOAuthError::IdentityDuplicate => Self::user(409, Some(value.to_string())),
+            DiscordOAuthError::ExpiredState => Self::user(400, Some(value.to_string())),
             _ => Self::user(404, Some(value.to_string())),
         }
     }
@@ -85,18 +91,24 @@ impl DiscordOAuthService {
         code: &str,
         state: &str,
     ) -> Result<Identity, DiscordOAuthError> {
-        let state = OAuthState::from_token(state, &self.config.discord.state_secret)
-            .map_err(InternalError::from)?;
+        let state = OAuthState::from_token(state, &self.config.discord.state_secret).map_err(
+            |e| match e.kind() {
+                jsonwebtoken::errors::ErrorKind::ExpiredSignature => {
+                    DiscordOAuthError::ExpiredState
+                }
+                _ => InternalError::from(e).into(),
+            },
+        )?;
 
-        let existing_discord = db::identities::find_linked_identities(
+        // lookup for duplicate Discord identity
+        let existing_discord = db::identities::find_linked_identity(
             &self.db,
             state.provider,
             &state.provider_user_id,
+            IdentityProvider::Discord,
         )
         .await
-        .map_err(InternalError::from)?
-        .into_iter()
-        .find(|i| i.provider == IdentityProvider::Discord);
+        .map_err(InternalError::from)?;
 
         let now = Utc::now();
         let tokens = self
