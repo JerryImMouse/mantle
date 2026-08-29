@@ -25,7 +25,6 @@ async fn main() -> Result<(), InternalError> {
 
     let addr = format!("{}:{}", config.server.host, config.server.port);
     let listener = TcpListener::bind(&addr).await?;
-
     tracing::info!(%addr, "server started");
 
     let state = build_state(config, db);
