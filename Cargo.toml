@@ -26,5 +26,5 @@ url = { version = "2.5" }
 utoipa = { version = "5.5", features = ["yaml", "chrono"], optional = true }
 
 [features]
-default = ["openapi"]
+default = []
 openapi = ["dep:utoipa"]
