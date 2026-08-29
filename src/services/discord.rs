@@ -14,6 +14,8 @@ use crate::{
     web::WebError,
 };
 
+pub const CACHE_TTL_HOURS: i64 = 1;
+
 pub const CURRENT_USER_CACHE_KEY: &str = "discord.current_user";
 pub const GUILDS_CACHE_KEY: &str = "discord.guilds";
 pub const GUILD_MEMBER_CACHE_KEY: &str = "discord.guild_member";
@@ -92,7 +94,7 @@ impl DiscordService {
                     identity.id,
                     CURRENT_USER_CACHE_KEY,
                     &user,
-                    Utc::now() + Duration::hours(1), // TTL is 1 hour for this
+                    Utc::now() + Duration::hours(CACHE_TTL_HOURS), // TTL is 1 hour for this
                 )
                 .await?;
                 user
@@ -144,7 +146,7 @@ impl DiscordService {
                         identity.id,
                         &cache_key,
                         &guild_member,
-                        Utc::now() + Duration::hours(1),
+                        Utc::now() + Duration::hours(CACHE_TTL_HOURS),
                     )
                     .await?;
 
@@ -191,7 +193,7 @@ impl DiscordService {
                     identity.id,
                     GUILDS_CACHE_KEY,
                     &guilds,
-                    Utc::now() + Duration::hours(1),
+                    Utc::now() + Duration::hours(CACHE_TTL_HOURS),
                 )
                 .await?;
 

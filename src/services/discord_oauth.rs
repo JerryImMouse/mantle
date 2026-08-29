@@ -3,9 +3,11 @@ use crate::{
     db::{
         self, MantleDb,
         identities::{Identity, IdentityProvider},
+        oauth_tokens,
     },
     error::InternalError,
     integrations::discord::DiscordClient,
+    services::CACHE_TTL_HOURS,
     web::WebError,
 };
 use chrono::{Duration, Utc};
@@ -24,6 +26,9 @@ pub enum DiscordOAuthError {
         provider: IdentityProvider,
         provider_user_id: String,
     },
+
+    #[error("discord identity for this user already exists")]
+    IdentityDuplicate,
 
     #[error("identity doesn't have oauth tokens: {0}")]
     IdentityTokensNotFound(Uuid),
@@ -74,6 +79,7 @@ impl DiscordOAuthService {
         Self { db, config, client }
     }
 
+    #[tracing::instrument(skip(self))]
     pub async fn process_callback(
         &self,
         code: &str,
@@ -81,6 +87,16 @@ impl DiscordOAuthService {
     ) -> Result<Identity, DiscordOAuthError> {
         let state = OAuthState::from_token(state, &self.config.discord.state_secret)
             .map_err(InternalError::from)?;
+
+        let existing_discord = db::identities::find_linked_identities(
+            &self.db,
+            state.provider,
+            &state.provider_user_id,
+        )
+        .await
+        .map_err(InternalError::from)?
+        .into_iter()
+        .find(|i| i.provider == IdentityProvider::Discord);
 
         let now = Utc::now();
         let tokens = self
@@ -99,6 +115,37 @@ impl DiscordOAuthService {
             .get_current_user(&tokens.access_token)
             .await
             .map_err(InternalError::from)?;
+
+        // we don't allow identity rewrites, only token updates
+        if let Some(existing_discord) = existing_discord {
+            if existing_discord.provider_user_id != discord_user.id.as_str() {
+                return Err(DiscordOAuthError::IdentityDuplicate);
+            } else {
+                tracing::warn!(identity_id = %existing_discord.id, "discord tokens were refreshed");
+
+                // we allow oauth tokens rewrites on the same discord user
+                oauth_tokens::update(
+                    &self.db,
+                    existing_discord.id,
+                    &tokens.access_token,
+                    &tokens.refresh_token,
+                    now + Duration::seconds(tokens.expires_in as i64),
+                )
+                .await
+                .map_err(InternalError::from)?;
+
+                db::identity_cache::set(
+                    &self.db,
+                    existing_discord.id,
+                    super::discord::CURRENT_USER_CACHE_KEY,
+                    &discord_user,
+                    now + Duration::hours(CACHE_TTL_HOURS), // TTL is 1 hour, but may be reduced later
+                )
+                .await?;
+
+                return Ok(existing_discord);
+            }
+        }
 
         let identity = match db::identities::find_by_provider_id(
             &self.db,
@@ -145,14 +192,14 @@ impl DiscordOAuthService {
             discord_identity.id,
             super::discord::CURRENT_USER_CACHE_KEY,
             &discord_user,
-            now + Duration::hours(1), // TTL is 1 hour, but may be reduced later
+            now + Duration::hours(CACHE_TTL_HOURS), // TTL is 1 hour, but may be reduced later
         )
         .await?;
 
         Ok(discord_identity)
     }
 
-    // https://docs.discord.com/developers/topics/oauth2#authorization-code-grant
+    #[tracing::instrument(skip(self))]
     pub fn generate_link(
         &self,
         provider: IdentityProvider,
