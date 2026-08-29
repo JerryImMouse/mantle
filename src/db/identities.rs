@@ -10,7 +10,7 @@ use super::MantleDb;
 #[serde(rename_all = "lowercase")]
 pub enum IdentityProvider {
     Discord,
-    SS14,
+    External,
 }
 
 #[derive(Debug, sqlx::FromRow)]

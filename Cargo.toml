@@ -2,7 +2,7 @@
 name = "mantle"
 version = "0.1.0"
 edition = "2024"
-description = "Discord authorization API service for SS14"
+description = "Discord identity linking service for external apps - link, cache, and query Discord data by your own user IDs."
 
 [dependencies]
 tokio = { version = "1.52", features = ["rt-multi-thread", "macros", "signal"] }
