@@ -14,7 +14,7 @@ pub struct IdentityCache {
     pub expires_at: DateTime<Utc>,
 }
 
-#[tracing::instrument(skip(d))]
+#[tracing::instrument(skip(d, value))]
 pub async fn set<T: Serialize + std::fmt::Debug>(
     d: &MantleDb,
     identity_id: Uuid,
@@ -40,6 +40,7 @@ pub async fn set<T: Serialize + std::fmt::Debug>(
     .await?)
 }
 
+#[tracing::instrument(skip(d))]
 pub async fn get<T: DeserializeOwned>(
     d: &MantleDb,
     identity_id: Uuid,

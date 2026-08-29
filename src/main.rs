@@ -9,6 +9,7 @@ use mantle::{
 };
 use tokio::net::TcpListener;
 use tower_http::trace::TraceLayer;
+use tracing_subscriber::{Layer, layer::SubscriberExt};
 
 #[tokio::main]
 #[tracing::instrument]
@@ -53,14 +54,13 @@ fn setup_tracing() {
     let filter = EnvFilter::try_from_default_env()
         .unwrap_or_else(|_| "mantle=debug,tower_http=debug,warn".into());
 
-    let sub = tracing_subscriber::fmt()
-        .with_env_filter(filter)
-        .compact()
-        .with_file(true)
-        .with_line_number(true)
-        .with_thread_ids(true)
-        .with_target(false)
-        .finish();
+    let registry = tracing_subscriber::registry().with(
+        tracing_subscriber::fmt::layer()
+            .with_file(true)
+            .with_line_number(true)
+            .with_target(false)
+            .with_filter(filter),
+    );
 
-    tracing::subscriber::set_global_default(sub).expect("Failed to setup `tracing`");
+    tracing::subscriber::set_global_default(registry).expect("Failed to setup `tracing`");
 }
