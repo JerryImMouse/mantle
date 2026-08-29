@@ -1,5 +1,3 @@
-//! Module which provides routes for bulk operations over UserMetadata
-
 use crate::{
     state::AppState,
     web::{middleware::authenticate, routes::RouteResult},

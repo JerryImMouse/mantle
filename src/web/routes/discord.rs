@@ -7,7 +7,7 @@ use axum::{
 };
 use reqwest::StatusCode;
 
-use super::models::UserRequestQuery;
+use crate::web::dto::UserRequestQuery;
 use crate::{
     integrations::discord::Snowflake,
     state::AppState,

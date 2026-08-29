@@ -6,13 +6,14 @@ use axum::{
     response::IntoResponse,
     routing::{get, post},
 };
-use serde::{Deserialize, Serialize};
 
 use crate::{
     db::identities::IdentityProvider,
     state::AppState,
     web::{middleware::authenticate, routes::RouteResult},
 };
+
+use crate::web::dto::auth::*;
 
 pub fn routes(state: AppState) -> Router<AppState> {
     let protected = Router::new()
@@ -23,18 +24,6 @@ pub fn routes(state: AppState) -> Router<AppState> {
     Router::new()
         .route("/callback", get(callback))
         .merge(protected)
-}
-
-#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
-#[derive(Debug, Deserialize)]
-struct CheckRequestBody {
-    user_id: String,
-}
-
-#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
-#[derive(Debug, Serialize)]
-struct CheckResponseBody {
-    status: String,
 }
 
 #[cfg_attr(
@@ -81,13 +70,6 @@ async fn check(
     }
 }
 
-#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
-#[derive(Debug, Serialize, Deserialize)]
-struct CallbackRequestQuery {
-    code: String,
-    state: String,
-}
-
 #[cfg_attr(
     feature = "openapi",
     utoipa::path(
@@ -116,18 +98,6 @@ async fn callback(
         .process_callback(&req.code, &req.state)
         .await?;
     Ok(StatusCode::OK)
-}
-
-#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
-#[derive(Debug, Deserialize)]
-struct GenerateLinkRequestQuery {
-    user_id: String,
-}
-
-#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
-#[derive(Debug, Serialize)]
-struct GenerateLinkResponseBody {
-    link: String,
 }
 
 #[cfg_attr(

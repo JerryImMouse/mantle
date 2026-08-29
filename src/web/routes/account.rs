@@ -1,14 +1,9 @@
-use super::models::UserRequestQuery;
+use crate::web::dto::{IdentityDto, UserMetadataDto, UserRequestQuery};
 use crate::{
     state::AppState,
-    web::{
-        middleware::authenticate,
-        routes::{
-            RouteResult,
-            models::{IdentityDto, UserMetadataDto},
-        },
-    },
+    web::{middleware::authenticate, routes::RouteResult},
 };
+
 use axum::{
     Json, Router,
     extract::{Path, Query, State},

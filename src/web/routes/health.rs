@@ -1,17 +1,10 @@
 use axum::{Router, extract::State, http::StatusCode, response::IntoResponse, routing::get};
-use serde::Serialize;
 
 use crate::{state::AppState, web::routes::RouteResult};
 pub fn routes() -> Router<AppState> {
     Router::new().route("/", get(health))
 }
-
-#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
-#[derive(Debug, Serialize)]
-struct HealthResponseBody {
-    status: String,
-    bind_to: String,
-}
+use crate::web::dto::health::*;
 
 #[cfg_attr(
     feature = "openapi",

@@ -3,7 +3,6 @@ pub mod auth;
 pub mod discord;
 pub mod health;
 pub mod metadata;
-pub mod models;
 
 use axum::Router;
 
