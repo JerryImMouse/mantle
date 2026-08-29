@@ -33,7 +33,11 @@ async fn main() -> Result<(), InternalError> {
     let router = web::build_router(state.clone())
         .layer(TraceLayer::new_for_http())
         .with_state(state);
-    axum::serve(listener, router).await?;
+    axum::serve(listener, router)
+        .with_graceful_shutdown(shutdown_signal())
+        .await?;
+
+    tracing::info!("Bye!!!");
     Ok(())
 }
 
@@ -63,4 +67,30 @@ fn setup_tracing() {
     );
 
     tracing::subscriber::set_global_default(registry).expect("Failed to setup `tracing`");
+}
+
+async fn shutdown_signal() {
+    let ctrl_c = async {
+        tokio::signal::ctrl_c()
+            .await
+            .expect("failed to install Ctrl+C handler");
+    };
+
+    #[cfg(unix)]
+    let terminate = async {
+        tokio::signal::unix::signal(tokio::signal::unix::SignalKind::terminate())
+            .expect("failed to install SIGTERM handler")
+            .recv()
+            .await;
+    };
+
+    #[cfg(not(unix))]
+    let terminate = std::future::pending::<()>();
+
+    tokio::select! {
+        _ = ctrl_c => {},
+        _ = terminate => {},
+    }
+
+    tracing::info!("shutdown signal received");
 }
