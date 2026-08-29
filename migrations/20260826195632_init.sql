@@ -8,7 +8,7 @@ CREATE TABLE mantle_users (
 
 CREATE TYPE identity_provider AS ENUM (
     'discord',
-    'ss14'
+    'external'
 );
 
 CREATE TABLE identities (

@@ -30,11 +30,11 @@ pub fn routes(state: AppState) -> Router<AppState> {
     feature = "openapi",
     utoipa::path(
         post,
-        description = "Checks whether this SS14 UserID has corresponding MantleUser and Discord Identity",
+        description = "Checks whether this External UserID has corresponding MantleUser and Discord Identity",
         path = "/api/auth/check",
         request_body(
             content = CheckRequestBody,
-            description = "Provide an SS14 user ID as `user_id`"
+            description = "Provide an External UserID as `user_id`"
         ),
         tag = "auth",
         responses(
@@ -50,7 +50,7 @@ async fn check(
 ) -> RouteResult<impl IntoResponse> {
     let result = state
         .account
-        .check(IdentityProvider::SS14, &req.user_id)
+        .check(IdentityProvider::External, &req.user_id)
         .await?;
 
     if !result.has(IdentityProvider::Discord) {
@@ -108,7 +108,7 @@ async fn callback(
         description = "Generate discord OAuth2 link",
         request_body(
             content = GenerateLinkRequestQuery,
-            description = "Provide an SS14 UserID as `user_id`"
+            description = "Provide an External UserID as `user_id`"
         ),
         tag = "auth",
         responses(
@@ -123,7 +123,7 @@ async fn generate_link(
 ) -> RouteResult<impl IntoResponse> {
     let link = state
         .discord_oauth
-        .generate_link(IdentityProvider::SS14, req.0.user_id)?;
+        .generate_link(IdentityProvider::External, req.0.user_id)?;
     Ok((StatusCode::OK, Json(GenerateLinkResponseBody { link })))
 }
 

@@ -30,7 +30,7 @@ Your service                         Mantle                          Discord
 
 ## Identity providers
 
-Identities are keyed by a provider + external ID pair. Out of the box this includes `SS14` (Mantle's primary use case, though nothing about it is game-specific) and `Discord`. Any service with its own user IDs works the same way - the SS14 naming is just a holdover from the original use case.
+Identities are keyed by a provider + external ID pair. Out of the box this includes `External` and `Discord`. Any service with its own user IDs works the same way.
 
 ## Per-user metadata
 
