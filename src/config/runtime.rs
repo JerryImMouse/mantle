@@ -53,7 +53,7 @@ impl Config {
             server,
             database,
             discord,
-            app
+            app,
         })
     }
 }

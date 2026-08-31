@@ -76,9 +76,8 @@ async fn check(
         get,
         path = "/api/auth/callback",
         description = "Discord callback should point here",
-        request_body(
-            content = CallbackRequestQuery,
-            description = "This should be supplied by discord itself"
+        params(
+            CallbackRequestQuery,
         ),
         tag = "auth",
         security(()),
@@ -111,9 +110,8 @@ async fn callback(
         get,
         path = "/api/auth/link",
         description = "Generate discord OAuth2 link",
-        request_body(
-            content = GenerateLinkRequestQuery,
-            description = "Provide an External UserID as `user_id`"
+        params(
+            GenerateLinkRequestQuery,
         ),
         tag = "auth",
         responses(
@@ -140,12 +138,7 @@ pub mod openapi {
     #[derive(utoipa::OpenApi)]
     #[openapi(
         paths(check, generate_link, callback,),
-        components(schemas(
-            CheckRequestBody,
-            CheckResponseBody,
-            GenerateLinkRequestQuery,
-            GenerateLinkResponseBody,
-        ))
+        components(schemas(CheckRequestBody, CheckResponseBody, GenerateLinkResponseBody,))
     )]
     pub struct ApiDoc;
 }

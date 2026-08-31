@@ -110,7 +110,8 @@ where
 {
     if let Ok(v) = dotenvy::var(key) {
         *target = v.parse().expect("invalid environment value");
-        return true;
+        true
+    } else {
+        false
     }
-    return false;
 }
