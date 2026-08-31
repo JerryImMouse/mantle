@@ -21,11 +21,9 @@ impl From<AuthenticateError> for WebError {
     fn from(value: AuthenticateError) -> Self {
         match value {
             AuthenticateError::NoAuthorizationHeader | AuthenticateError::UnauthorizedApiToken => {
-                Self::user(401, Some(value.to_string()))
+                Self::user(401, value.to_string())
             }
-            AuthenticateError::InvalidAuthorizationHeader => {
-                Self::user(400, Some(value.to_string()))
-            }
+            AuthenticateError::InvalidAuthorizationHeader => Self::user(400, value.to_string()),
         }
     }
 }
@@ -41,7 +39,7 @@ pub async fn authenticate(
             Err(e) => {
                 return Err(WebError::user(
                     400,
-                    Some(format!("invalid authorization header value: {e}")),
+                    format!("invalid authorization header value: {e}"),
                 ));
             }
         },

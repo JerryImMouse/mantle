@@ -6,7 +6,7 @@ use crate::error::InternalError;
 #[derive(Debug, Serialize, Deserialize)]
 pub struct WebErrorDetails {
     status_code: u16,
-    error_msg: Option<String>,
+    message: String,
 }
 
 #[derive(Debug)]
@@ -16,10 +16,10 @@ pub enum WebError {
 }
 
 impl WebError {
-    pub fn user(status_code: u16, error_msg: Option<String>) -> Self {
+    pub fn user(status_code: u16, message: String) -> Self {
         Self::User(WebErrorDetails {
             status_code,
-            error_msg,
+            message,
         })
     }
 }
@@ -27,9 +27,9 @@ impl WebError {
 impl std::fmt::Display for WebError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         if let WebError::Internal(e) = self {
-            write!(f, "Internal error occured: {e}")
+            write!(f, "internal err: {e}")
         } else {
-            write!(f, "Error logged: {self:?}")
+            write!(f, "user err: {self:?}")
         }
     }
 }
