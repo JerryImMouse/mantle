@@ -47,9 +47,9 @@ impl From<DiscordOAuthError> for WebError {
     fn from(value: DiscordOAuthError) -> Self {
         match value {
             DiscordOAuthError::Internal(e) => Self::from(e),
-            DiscordOAuthError::IdentityDuplicate => Self::user(409, Some(value.to_string())),
-            DiscordOAuthError::ExpiredState => Self::user(400, Some(value.to_string())),
-            _ => Self::user(404, Some(value.to_string())),
+            DiscordOAuthError::IdentityDuplicate => Self::user(409, value.to_string()),
+            DiscordOAuthError::ExpiredState => Self::user(400, value.to_string()),
+            _ => Self::user(404, value.to_string()),
         }
     }
 }
