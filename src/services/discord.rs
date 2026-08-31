@@ -11,6 +11,7 @@ use crate::{
     integrations::discord::{
         DiscordClient, DiscordUserModel, GuildMemberModel, PartialGuildModel, Snowflake,
     },
+    utils::tokens::RefreshLock,
     web::WebError,
 };
 
@@ -48,11 +49,17 @@ pub struct DiscordService {
     db: MantleDb,
     client: DiscordClient,
     config: SharedConfig,
+    refresh_lock: RefreshLock,
 }
 
 impl DiscordService {
     pub fn new(db: MantleDb, client: DiscordClient, config: SharedConfig) -> Self {
-        Self { db, client, config }
+        Self {
+            db,
+            client,
+            config,
+            refresh_lock: Default::default(),
+        }
     }
 
     pub async fn get_current_user(
@@ -212,18 +219,24 @@ impl DiscordService {
     }
 
     async fn access_token(&self, identity: &Identity) -> Result<String> {
-        // TODO: Current implementation can allow making refresh races
-        // where hundreds of requests can try to get access_token and see expired one ->
-        // they all will try to update it and may end up being rate limited.
-        // This stuff need some per-identity lock or smth
-        let tokens = db::oauth_tokens::find_by_id(&self.db, identity.id)
-            .await
-            .map_err(InternalError::from)?;
+        loop {
+            let tokens = db::oauth_tokens::find_by_id(&self.db, identity.id)
+                .await
+                .map_err(InternalError::from)?
+                .ok_or(DiscordError::IdentityHasNoTokens(identity.id))?;
 
-        if let Some(tokens) = tokens {
             if tokens.expires_at > Utc::now() + Duration::minutes(1) {
                 return Ok(tokens.access_token);
             }
+
+            // try acquire a lock before refresh
+            let guard = match self.refresh_lock.try_lock(identity) {
+                Ok(guard) => guard,
+                Err(notify) => {
+                    notify.notified().await;
+                    continue;
+                }
+            };
 
             let credentials = self.client_credentials();
             let new_tokens = self
@@ -243,9 +256,11 @@ impl DiscordService {
             .await
             .map_err(InternalError::from)?;
 
+            // we will explicitly drop it here so rustc won't do its magic
+            // (probably it won't do it anyway because of Drop impl, but still)
+            drop(guard);
+
             return Ok(new_tokens.access_token);
         }
-
-        Err(DiscordError::IdentityHasNoTokens(identity.id))
     }
 }
