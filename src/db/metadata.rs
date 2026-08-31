@@ -8,6 +8,7 @@ pub struct UserMetadata {
     pub mantle_user_id: Uuid,
     pub key: String,
     pub value: serde_json::Value,
+    pub private: bool,
 
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
@@ -18,13 +19,15 @@ pub async fn set(
     mantle_user_id: Uuid,
     key: &str,
     value: &serde_json::Value,
+    private: Option<bool>,
 ) -> sqlx::Result<UserMetadata> {
     sqlx::query_as(
         r#"
-        INSERT INTO user_metadata (mantle_user_id, key, value)
-        VALUES ($1, $2, $3) 
+        INSERT INTO user_metadata (mantle_user_id, key, value, private)
+        VALUES ($1, $2, $3, $4) 
         ON CONFLICT (mantle_user_id, key) DO UPDATE
             SET value = excluded.value,
+                private = excluded.private,
                 updated_at = NOW()
         RETURNING *;
         "#,
@@ -32,6 +35,7 @@ pub async fn set(
     .bind(mantle_user_id)
     .bind(key)
     .bind(value)
+    .bind(private.unwrap_or(false))
     .fetch_one(d)
     .await
 }

@@ -33,6 +33,7 @@ impl From<Identity> for IdentityDto {
 #[derive(Debug, Serialize, Deserialize)]
 pub struct UserMetadataDto {
     value: serde_json::Value,
+    private: bool,
     created_at: DateTime<Utc>,
     updated_at: DateTime<Utc>,
 }
@@ -41,6 +42,7 @@ impl From<UserMetadata> for UserMetadataDto {
     fn from(value: UserMetadata) -> Self {
         Self {
             value: value.value,
+            private: value.private,
             created_at: value.created_at,
             updated_at: value.updated_at,
         }
