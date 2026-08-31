@@ -1,12 +1,15 @@
 use std::net::Ipv4Addr;
 
-use crate::config::{Config, ConfigError, DatabaseConfig, DiscordConfig, ServerConfig};
+use url::Url;
+
+use crate::config::{AppConfig, Config, ConfigError, DatabaseConfig, DiscordConfig, ServerConfig};
 
 #[derive(Debug)]
 pub struct RuntimeConfig {
     pub server: RuntimeServerConfig,
     pub database: RuntimeDatabaseConfig,
     pub discord: RuntimeDiscordConfig,
+    pub app: RuntimeAppConfig,
 }
 
 #[derive(Debug)]
@@ -25,6 +28,11 @@ pub struct RuntimeDiscordConfig {
 }
 
 #[derive(Debug)]
+pub struct RuntimeAppConfig {
+    pub redirect_uri: Option<Url>,
+}
+
+#[derive(Debug)]
 pub struct RuntimeDatabaseConfig {
     pub url: String,
 }
@@ -40,10 +48,12 @@ impl Config {
         let server = self.server.validate()?;
         let database = self.database.validate()?;
         let discord = self.discord.validate()?;
+        let app = self.app.validate()?;
         Ok(RuntimeConfig {
             server,
             database,
             discord,
+            app
         })
     }
 }
@@ -61,6 +71,14 @@ impl DiscordConfig {
             client_secret: self.client_secret,
             redirect_uri: self.redirect_uri,
             state_secret: self.state_secret,
+        })
+    }
+}
+
+impl AppConfig {
+    fn validate(self) -> Result<RuntimeAppConfig, ConfigError> {
+        Ok(RuntimeAppConfig {
+            redirect_uri: self.redirect_uri,
         })
     }
 }

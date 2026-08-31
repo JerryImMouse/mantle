@@ -53,7 +53,7 @@ Open the resulting file in any OpenAPI viewer (Swagger UI, Redoc, etc.) to brows
 
 ## Setup
 
-Mantle is configured via a required `config.toml` in the project root — every field must be present. Any field can be overridden via environment variables (e.g. for secrets you don't want committed).
+Mantle is configured via a required `config.toml` in the project root — every field(except `redirect_uri`) must be present. Any field can be overridden via environment variables (e.g. for secrets you don't want committed).
 
 ```toml
 [database]
@@ -68,7 +68,10 @@ api_secret = "..."
 client_id = "..."
 client_secret = "..."
 redirect_uri = "https://your-domain/api/auth/callback"
-state_secret = "..."
+state_secret = "..." 
+
+[app]
+redirect_uri = "https://example.com" # the only optional field in the config
 
 ```
 
@@ -82,6 +85,7 @@ state_secret = "..."
 | `APP_DISCORD_CLIENT_SECRET` | `discord.client_secret` |
 | `APP_DISCORD_REDIRECT_URI` | `discord.redirect_uri` |
 | `APP_DISCORD_STATE_SECRET` | `discord.state_secret` |
+| `APP_CALLBACK_REDIRECT_URI` | `app.redirect_uri` |
 
 Once `config.toml` is in place, it's a regular Rust project:
 

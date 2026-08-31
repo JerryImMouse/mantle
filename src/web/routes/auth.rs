@@ -3,7 +3,7 @@ use axum::{
     extract::{Query, State},
     http::StatusCode,
     middleware,
-    response::IntoResponse,
+    response::{IntoResponse, Redirect, Response},
     routing::{get, post},
 };
 
@@ -83,7 +83,8 @@ async fn check(
         tag = "auth",
         security(()),
         responses(
-            (status = 200),
+            (status = 200, description = "if redirect_uri is not set in the config, this reponse will be returned"),
+            (status = 308, description = "if the redirect_uri IS set - then the user will be redirected to specfied URI"),
             (status = "default", body = openapi::ErrorResponse),
         )
     )
@@ -92,12 +93,16 @@ async fn check(
 async fn callback(
     state: State<AppState>,
     req: Query<CallbackRequestQuery>,
-) -> RouteResult<impl IntoResponse> {
+) -> RouteResult<Response> {
     state
         .discord_oauth
         .process_callback(&req.code, &req.state)
         .await?;
-    Ok(StatusCode::OK)
+    if let Some(redirect_uri) = state.config.app.redirect_uri.as_ref() {
+        Ok(Redirect::permanent(redirect_uri.as_str()).into_response())
+    } else {
+        Ok(StatusCode::OK.into_response())
+    }
 }
 
 #[cfg_attr(
