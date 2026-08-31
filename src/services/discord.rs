@@ -38,7 +38,7 @@ impl From<DiscordError> for WebError {
     fn from(value: DiscordError) -> Self {
         match value {
             DiscordError::Internal(e) => Self::from(e),
-            _ => Self::user(404, Some(value.to_string())),
+            _ => Self::user(404, value.to_string()),
         }
     }
 }

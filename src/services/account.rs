@@ -25,7 +25,7 @@ impl From<AccountError> for WebError {
     fn from(value: AccountError) -> Self {
         match value {
             AccountError::Internal(e) => WebError::from(e),
-            e => WebError::user(400, Some(e.to_string())),
+            e => WebError::user(400, e.to_string()),
         }
     }
 }
