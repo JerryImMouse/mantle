@@ -3,7 +3,7 @@ use axum::{
     extract::{Query, State},
     http::StatusCode,
     middleware,
-    response::IntoResponse,
+    response::{IntoResponse, Redirect, Response},
     routing::{get, post},
 };
 
@@ -76,14 +76,14 @@ async fn check(
         get,
         path = "/api/auth/callback",
         description = "Discord callback should point here",
-        request_body(
-            content = CallbackRequestQuery,
-            description = "This should be supplied by discord itself"
+        params(
+            CallbackRequestQuery,
         ),
         tag = "auth",
         security(()),
         responses(
-            (status = 200),
+            (status = 200, description = "if redirect_uri is not set in the config, this reponse will be returned"),
+            (status = 308, description = "if the redirect_uri IS set - then the user will be redirected to specfied URI"),
             (status = "default", body = openapi::ErrorResponse),
         )
     )
@@ -92,12 +92,16 @@ async fn check(
 async fn callback(
     state: State<AppState>,
     req: Query<CallbackRequestQuery>,
-) -> RouteResult<impl IntoResponse> {
+) -> RouteResult<Response> {
     state
         .discord_oauth
         .process_callback(&req.code, &req.state)
         .await?;
-    Ok(StatusCode::OK)
+    if let Some(redirect_uri) = state.config.app.redirect_uri.as_ref() {
+        Ok(Redirect::permanent(redirect_uri.as_str()).into_response())
+    } else {
+        Ok(StatusCode::OK.into_response())
+    }
 }
 
 #[cfg_attr(
@@ -106,9 +110,8 @@ async fn callback(
         get,
         path = "/api/auth/link",
         description = "Generate discord OAuth2 link",
-        request_body(
-            content = GenerateLinkRequestQuery,
-            description = "Provide an External UserID as `user_id`"
+        params(
+            GenerateLinkRequestQuery,
         ),
         tag = "auth",
         responses(
@@ -135,12 +138,7 @@ pub mod openapi {
     #[derive(utoipa::OpenApi)]
     #[openapi(
         paths(check, generate_link, callback,),
-        components(schemas(
-            CheckRequestBody,
-            CheckResponseBody,
-            GenerateLinkRequestQuery,
-            GenerateLinkResponseBody,
-        ))
+        components(schemas(CheckRequestBody, CheckResponseBody, GenerateLinkResponseBody,))
     )]
     pub struct ApiDoc;
 }
