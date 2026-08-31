@@ -11,3 +11,6 @@ client_id = "change-me"
 client_secret = "change-me"
 redirect_uri = "http://localhost:5050/api/auth/callback"
 state_secret = "change-me"
+
+[app]
+redirect_uri = "https://example.com"

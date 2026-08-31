@@ -21,7 +21,7 @@ uuid = { version = "1.25", features = ["v4", "serde"] }
 chrono = { version = "0.4", features = ["serde"]}
 reqwest = { version = "0.13", features = ["json", "form"] }
 jsonwebtoken = { version = "11", features = ["aws_lc_rs"] }
-url = { version = "2.5" }
+url = { version = "2.5", features = ["serde"] }
 
 utoipa = { version = "5.5", features = ["yaml", "chrono"], optional = true }
 
