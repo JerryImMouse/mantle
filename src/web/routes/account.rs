@@ -1,3 +1,4 @@
+use crate::web::dto::account::*;
 use crate::web::dto::{IdentityDto, UserMetadataDto, UserRequestQuery};
 use crate::{
     state::AppState,
@@ -66,8 +67,8 @@ async fn get_linked_identities(
             ("key" = String, Path, description = "Metadata key to set")
         ),
         request_body(
-            content = serde_json::Value,
-            description = "Any JSON value to make metadata value",
+            content = MetadataRequestBody,
+            description = "Any JSON value to make metadata value and a private flag",
         ),
         responses(
             (status = 200, body = UserMetadataDto),
@@ -80,12 +81,12 @@ async fn set_metadata(
     State(state): State<AppState>,
     Query(req): Query<UserRequestQuery>,
     Path(key): Path<String>,
-    Json(value): Json<serde_json::Value>,
+    Json(body): Json<MetadataRequestBody>,
 ) -> RouteResult<impl IntoResponse> {
     let metadata = UserMetadataDto::from(
         state
             .account
-            .metadata_set(req.provider, &req.id, &key, &value)
+            .metadata_set(req.provider, &req.id, &key, &body.value, body.private)
             .await?,
     );
     Ok((StatusCode::OK, Json(metadata)))

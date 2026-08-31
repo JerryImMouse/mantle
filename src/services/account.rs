@@ -107,6 +107,7 @@ impl AccountService {
         provider_user_id: &str,
         key: &str,
         value: &serde_json::Value,
+        private: Option<bool>,
     ) -> Result<UserMetadata> {
         let identity = db::identities::find_by_provider_id(&self.db, provider, provider_user_id)
             .await
@@ -116,7 +117,7 @@ impl AccountService {
                 provider_user_id: provider_user_id.into(),
             })?;
 
-        let metadata = db::metadata::set(&self.db, identity.mantle_user_id, key, value)
+        let metadata = db::metadata::set(&self.db, identity.mantle_user_id, key, value, private)
             .await
             .map_err(InternalError::from)?;
 
