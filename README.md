@@ -95,6 +95,27 @@ cargo run --bin mantle
 
 Build, deploy, and release builds work the same as any other Cargo project — no extra steps beyond the usual `--release`, aside from the other `--bin` targets in the workspace (e.g. `generate-openapi`, mentioned above)
 
+## Docker
+
+```bash
+docker build -t mantle .
+docker run --rm -p 5050:5050 -v ./config.toml:/app/config.toml:ro --name mantle mantle
+```
+
+Secrets can be passed via the same `APP_*` env vars instead of putting them in the mounted `config.toml`:
+
+```bash
+docker run --rm -p 5050:5050 \
+  -v ./config.toml:/app/config.toml:ro \
+  -e APP_DATABASE_URL="postgres://user:password@host.docker.internal/mantle" \
+  -e APP_DISCORD_CLIENT_SECRET="..." \
+  -e APP_DISCORD_STATE_SECRET="..." \
+  -e APP_API_SECRET="..." \
+  mantle
+```
+
+If Postgres runs on the host rather than in a container, use `host.docker.internal` instead of `localhost` in `database.url` — the container has its own network namespace.
+
 ## License
 
 MIT 2026 JerryImMouse - see LICENSE.TXT
